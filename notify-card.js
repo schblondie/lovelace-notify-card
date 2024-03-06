@@ -47,26 +47,34 @@ class NotifyCard extends HTMLElement {
     this.content.querySelector("#notification_text").addEventListener("keydown", this.keydown.bind(this), false);
   }
 
-  send(){
+  send() {
+
     let msg = this.content.querySelector("#notification_text").value;
     let title = this.content.querySelector("#notification_title")?.value ?? this.config.notification_title;
+
     for (let t of this.targets) {
+
       let [domain, target = null] = t.split(".");
-      if(target === null){
+      
+      if (target === null) {
         target = domain;
         domain = "notify";
       }
-      if(domain === "tts"){
-        this.hass.callService(domain, target, {"entity_id": this.config.entity, "message": msg});
+
+      if (domain === "tts") {
+        this.hass.callService('tts', 'speak', { "entity_id": t, "message": msg, "media_player_entity_id": this.config.entity });
       } else {
-        this.hass.callService(domain, target, {message: msg, title: title, data: this.config.data});
+        this.hass.callService(domain, target, { message: msg, title: title, data: this.config.data });
       }
     }
+
     this.content.querySelectorAll("ha-textfield").forEach(e => e.value = "");
   }
 
   keydown(e){
-    if(e.code == "Enter") this.send();
+    if(e.code == "Enter") {
+      this.send();
+    }
   }
 }
 
